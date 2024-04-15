@@ -17,7 +17,7 @@ function App({ Component, pageProps }) {
                     }
                     return res.json();
                 },
-            }}
+        }}
         >
             <RouteGuard>
                 <Layout>

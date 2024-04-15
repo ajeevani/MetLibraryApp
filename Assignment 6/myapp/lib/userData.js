@@ -1,45 +1,117 @@
 import { getToken } from './authenticate';
-
-async function requestWithToken(url, method = 'GET', body = null) {
-  const token = getToken();
-  const headers = {
-    'Content-Type': 'application/json',
-    Authorization: `JWT ${token}`,
-  };
-
-  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}${url}`, {
-    method,
-    headers,
-    body: body ? JSON.stringify(body) : null,
-  });
-
-  if (response.ok) {
-    return response.json();
-  } else {
-    return [];
-  }
-}
-
+const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 export async function addToFavourites(id) {
-  return requestWithToken(`/favourites/${id}`, 'PUT');
+    const token = getToken();
+    try {
+        const res = await fetch(`${apiUrl}/favourites/${id}`, {
+            method: 'PUT',
+            headers: {
+                'Authorization': `JWT ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+        if (res.status === 200) {
+            return await res.json();
+        }
+        return [];
+    } catch (error) {
+        console.error('Error adding to favorites:', error);
+        return [];
+    }
 }
 
 export async function removeFromFavourites(id) {
-  return requestWithToken(`/favourites/${id}`, 'DELETE');
+    const token = getToken();
+    try {
+        const res = await fetch(`${apiUrl}/favourites/${id}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `JWT ${token}`
+            }
+        });
+        if (res.status === 200) {
+            return await res.json();
+        }
+        return [];
+    } catch (error) {
+        console.error('Error removing from favorites:', error);
+        return [];
+    }
 }
 
 export async function getFavourites() {
-  return requestWithToken('/favourites');
+    const token = getToken();
+    try {
+        const res = await fetch(`${apiUrl}/favourites`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `JWT ${token}`
+            }
+        });
+        if (res.status === 200) {
+            return await res.json();
+        }
+        return [];
+    } catch (error) {
+        console.error('Error fetching favorites:', error);
+        return [];
+    }
 }
 
 export async function addToHistory(id) {
-  return requestWithToken(`/history/${id}`, 'PUT');
+    const token = getToken();
+    try {
+        const res = await fetch(`${apiUrl}/history/${id}`, {
+            method: 'PUT',
+            headers: {
+                'Authorization': `JWT ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+        if (res.status === 200) {
+            return await res.json();
+        }
+        return [];
+    } catch (error) {
+        console.error('Error adding to history:', error);
+        return [];
+    }
 }
 
 export async function removeFromHistory(id) {
-  return requestWithToken(`/history/${id}`, 'DELETE');
+    const token = getToken();
+    try {
+        const res = await fetch(`${apiUrl}/history/${id}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `JWT ${token}`
+            }
+        });
+        if (res.status === 200) {
+            return await res.json();
+        }
+        return [];
+    } catch (error) {
+        console.error('Error removing from history:', error);
+        return [];
+    }
 }
 
 export async function getHistory() {
-  return requestWithToken('/history');
+    const token = getToken();
+    try {
+        const res = await fetch(`${apiUrl}/history`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `JWT ${token}`
+            }
+        });
+        if (res.status === 200) {
+            return await res.json();
+        }
+        return [];
+    } catch (error) {
+        console.error('Error fetching history:', error);
+        return [];
+    }
 }

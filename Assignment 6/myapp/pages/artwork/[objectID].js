@@ -1,15 +1,10 @@
-import { useRouter } from 'next/router';
-import { Row, Col } from 'react-bootstrap';
-import ArtworkCardDetail from '../../components/ArtworkCardDetail';
+import { Row, Col } from "react-bootstrap";
+import { useRouter } from "next/router";
+import ArtworkCardDetail from "@/components/ArtworkCardDetail";
 
-function ArtworkById() {
+const ArtworkById = () => {
   const router = useRouter();
   const { objectID } = router.query;
-
-  if (!objectID) {
-    return <div>Loading...</div>;
-  }
-
   return (
     <Row>
       <Col>
@@ -17,7 +12,6 @@ function ArtworkById() {
       </Col>
     </Row>
   );
-}
+};
 
 export default ArtworkById;
-

@@ -1,72 +1,78 @@
-import { useEffect, useState } from 'react';
-import { useAtom } from 'jotai';
-import { favouritesAtom } from '@/store';
-import { addToFavourites, removeFromFavourites } from '@/lib/userData';
-import useSWR from 'swr';
-import { Card, Button } from 'react-bootstrap';
-import Error from 'next/error';
-import { useRouter } from 'next/router';
+import { useEffect, useState } from "react";
+import useSWR from "swr";
+import Card from "react-bootstrap/Card";
+import Link from "next/link";
+import Error from "next/error";
+import { useAtom } from "jotai";
+import { favouritesAtom } from "@/store";
+import { addToFavourites, removeFromFavourites } from "@/lib/userData";
 
-function ArtworkCardDetail({ objectID }) {
-  const [showAdded, setShowAdded] = useState(false);
+export default function ArtworkCardDetail({ objectID }) {
+  const { data, error } = useSWR(`https://collectionapi.metmuseum.org/public/collection/v1/objects/${objectID}`);
+
   const [favouritesList, setFavouritesList] = useAtom(favouritesAtom);
-  const router = useRouter();
+  const [showAdded, setShowAdded] = useState(false);
 
   useEffect(() => {
     setShowAdded(favouritesList?.includes(objectID));
-  }, [favouritesList]);
+  }, [favouritesList, objectID]);
 
   const favouritesClicked = async () => {
     if (showAdded) {
-      setFavouritesList(await removeFromFavourites(objectID));
+      const updatedFavourites = await removeFromFavourites(objectID);
+      setFavouritesList(updatedFavourites);
     } else {
-      setFavouritesList(await addToFavourites(objectID));
+      const updatedFavourites = await addToFavourites(objectID);
+      setFavouritesList(updatedFavourites);
     }
     setShowAdded(!showAdded);
   };
 
-  const { data, error } = useSWR(
-    objectID ? `https://collectionapi.metmuseum.org/public/collection/v1/objects/${objectID}` : null,
-    async (url) => {
-      const res = await fetch(url);
-      if (!res.ok) {
-        throw new Error('Error fetching data');
-      }
-      return res.json();
-    }
-  );
+  if (!data) {
+    return null;
+  }
+  if (error) {
+    return <Error statusCode={404} />;
+  }
 
-  if (error) return <Error statusCode={404} title="Artwork not found" />;
-  if (!data) return <div>Loading...</div>;
+  const {
+    artistDisplayName,
+    creditLine,
+    dimensions,
+    artistWikidata_URL,
+    title,
+    primaryImage,
+    objectDate,
+    classification,
+    medium,
+  } = data;
 
   return (
     <Card>
-      <Card.Img variant="top" src={data.primaryImageSmall || 'https://via.placeholder.com/375x375.png?text=Not+Available'} />
+      {primaryImage && <Card.Img variant="top" src={primaryImage} />}
       <Card.Body>
-        <Card.Title>{data.title || 'N/A'}</Card.Title>
         <Card.Text>
-          Date: {data.objectDate || 'N/A'}
+          <h4>{title}</h4>
+          <strong>Date:</strong> {objectDate || "N/A"} <br />
+          <strong>Classification:</strong> {classification || "N/A"} <br />
+          <strong>Medium:</strong> {medium || "N/A"} <br />
+          <strong>Artist:</strong> {artistDisplayName || "N/A"}
+          {artistWikidata_URL && (
+            <Link href={artistWikidata_URL} target="_blank" rel="noreferrer" passHref legacyBehavior>
+              &quot;wiki&quot;
+            </Link>
+          )}
           <br />
-          Classification: {data.classification || 'N/A'}
-          <br />
-          Medium: {data.medium || 'N/A'}
-          <br /><br />
-          Artist: {data.artistDisplayName || 'N/A'}  <a href={data.artistWikidata_URL} target="_blank" rel="noreferrer"> wiki</a>
-          <br />
-          Credit Line: {data.creditLine || 'N/A'}
-          <br />
-          Dimensions: {data.dimensions || 'N/A'}
-          <br /><br />
-          <Button
-            variant={showAdded ? 'primary' : 'outline-primary'}
-            onClick={favouritesClicked}
-          >
-            {showAdded ? '+ Favourite (added)' : '+ Favourite'}
-          </Button>
+          <strong>Credit Line:</strong> {creditLine || "N/A"} <br />
+          <strong>Dimensions:</strong> {dimensions || "N/A"}
         </Card.Text>
+        <button
+          className={`btn btn-${showAdded ? "primary" : "outline-primary"}`}
+          onClick={favouritesClicked}
+        >
+          + Favourite {showAdded ? "(added)" : ""}
+        </button>
       </Card.Body>
     </Card>
   );
 }
-
-export default ArtworkCardDetail;

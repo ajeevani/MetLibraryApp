@@ -1,45 +1,69 @@
-import { useRouter } from 'next/router';
+import React from "react";
+import { useRouter } from "next/router";
 import { useAtom } from 'jotai';
-import { searchHistoryAtom } from '@/store';
-import { removeFromHistory } from '@/lib/userData';
-import { Card, Button } from 'react-bootstrap';
+import { searchHistoryAtom } from "@/store";
+import { removeFromHistory } from "@/lib/userData";
+import { Card, ListGroup, Button } from "react-bootstrap";
+import styles from '@/styles/History.module.css';
 
 const History = () => {
-  const [searchHistory, setSearchHistory] = useAtom(searchHistoryAtom);
-  const router = useRouter();
+    const router = useRouter();
+    const [searchHistory, setSearchHistory] = useAtom(searchHistoryAtom);
+    if (!searchHistory) return null;
+    let parsedHistory = [];
+    searchHistory.forEach(h => {
+        let params = new URLSearchParams(h);
+        let entries = params.entries();
+        parsedHistory.push(Object.fromEntries(entries));
+    });
+    const historyClicked = (e, index) => {
+        e.stopPropagation();
+        const query = searchHistory[index];
+        router.push(`/artwork?${query}`);
+    };
+    const removeHistoryClicked = async (e, index) => {
+        e.stopPropagation();
+        const updatedHistory = await removeFromHistory(searchHistory[index]);
+        setSearchHistory(updatedHistory);
+    };
 
-  if (!searchHistory) return null;
-
-  const removeHistoryClicked = async (index) => {
-    setSearchHistory(await removeFromHistory(searchHistory[index]));
-  };
-
-  return (
-    <div>
-      <h2>Search History</h2>
-      {searchHistory.length > 0 ? (
-        <ul>
-          {searchHistory.map((query, index) => (
-            <li key={index}>
-              <Button variant="link" onClick={() => router.push(`/search?${query}`)}>
-                {query}
-              </Button>
-              <Button variant="danger" size="sm" onClick={() => removeHistoryClicked(index)}>
-                &times;
-              </Button>
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <Card>
-          <Card.Body>
-            <h4>Nothing Here</h4>
-            Try searching for some artworks.
-          </Card.Body>
-        </Card>
-      )}
-    </div>
-  );
+    return (
+        <div>
+            {parsedHistory.length === 0 ? (
+                <Card>
+                    <Card.Body>
+                        <h4>Nothing Here</h4>
+                        Try searching for some artwork.
+                    </Card.Body>
+                </Card>
+            ) : (
+                <ListGroup>
+                    {parsedHistory.map((historyItem, index) => (
+                        <ListGroup.Item
+                            key={index}
+                            className={styles.historyListItem}
+                            onClick={(e) => historyClicked(e, index)}
+                        >
+                            {Object.keys(historyItem).map((key, i) => (
+                                <span key={i}>
+                                    {key}: <strong>{historyItem[key]}</strong>&nbsp;
+                                </span>
+                            ))}
+                            <Button
+                                className="float-end"
+                                variant="danger"
+                                size="sm"
+                                onClick={(e) => removeHistoryClicked(e, index)}
+                            >
+                                &times;
+                            </Button>
+                        </ListGroup.Item>
+                    ))}
+                </ListGroup>
+            )}
+        </div>
+    );
 };
 
 export default History;
+

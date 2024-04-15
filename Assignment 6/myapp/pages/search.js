@@ -1,87 +1,124 @@
-import React from 'react';
-import { useRouter } from 'next/router';
-import { useForm } from 'react-hook-form';
-import { Button, Form, Row, Col } from 'react-bootstrap';
-import { useAtom } from 'jotai';
-import { searchHistoryAtom } from '../store';
-import { addToHistory } from '@/lib/userData';
+import { useRouter } from "next/router";
+import { addToHistory } from "@/lib/userData";
+import { searchHistoryAtom } from "@/store";
+import { Form, Button, Row, Col } from "react-bootstrap";
+import { useForm } from "react-hook-form";
+import { useAtom } from "jotai";
 
-function AdvancedSearch() {
-  const { register, handleSubmit, formState: { errors } } = useForm({
-    mode: "onTouched"
-  });
-  const router = useRouter();
-  const [searchHistory, setSearchHistory] = useAtom(searchHistoryAtom);
+const AdvancedSearch = () => {
+    const { register, handleSubmit, formState: { errors } } = useForm({
+        defaultValues: { searchQuery: "", searchBy: "title", geoLocation: "", medium: "", isHighlight: false, isOnView: false, },
+    });
 
-  const submitForm = async (data) => {
-    let queryString = `${Object.entries(data)
-      .filter(([_, value]) => value !== '' && value !== false)
-      .map(([key, value]) => `${key}=${value === true ? 'true' : encodeURIComponent(value)}`)
-      .join('&')}`;
+    const router = useRouter();
+    const [searchHistory, setSearchHistory] = useAtom(searchHistoryAtom);
 
-    setSearchHistory(await addToHistory(queryString));
-    router.push(`/search?${queryString}`);
-  };
+    const submitForm = async (data) => {
+        let queryString = "";
+        queryString += `${encodeURIComponent(data.searchBy)}=true`;
+        queryString += data.geoLocation ? `&geoLocation=${encodeURIComponent(data.geoLocation)}` : "";
+        queryString += data.medium ? `&medium=${encodeURIComponent(data.medium)}` : "";
+        queryString += `&isOnView=${data.isOnView || false}`;
+        queryString += `&isHighlight=${data.isHighlight || false}`;
+        queryString += `&q=${encodeURIComponent(data.searchQuery)}`;
 
-  return (
-    <Form onSubmit={handleSubmit(submitForm)}>
-      <Row>
-        <Col>
-          <Form.Group>
-            <Form.Label>Search Query</Form.Label>
-            <Form.Control 
-              type="text"
-              {...register('q', { required: "Search query is required." })}
-              isInvalid={!!errors.q}
-            />
-            <Form.Control.Feedback type="invalid">
-              {errors.q?.message}
-            </Form.Control.Feedback>
-          </Form.Group>
-        </Col>
-      </Row>
-      <Row>
-        <Col md={4}>
-          <Form.Group>
-            <Form.Label>Search By</Form.Label>
-            <Form.Select {...register('searchBy')}>
-              <option value="title">Title</option>
-              <option value="tags">Tags</option>
-              <option value="artistculture">Artist or Culture</option>
-            </Form.Select>
-          </Form.Group>
-        </Col>
-        <Col md={4}>
-          <Form.Group>
-            <Form.Label>Geo Location</Form.Label>
-            <Form.Control type="text" {...register('geoLocation')} placeholder="Enter geo location" />
-            <Form.Text>
-            Case Sensitive String (ie "Europe", "France", "Paris", "China", "New York", etc.), with multiple values separated by the | operator
-            </Form.Text>
-          </Form.Group>
-        </Col>
-        <Col md={4}>
-          <Form.Group>
-            <Form.Label>Medium</Form.Label>
-            <Form.Control type="text" {...register('medium')} placeholder="Enter medium" />
-            <Form.Text>
-            Case Sensitive String (ie: "Ceramics", "Furniture", "Paintings", "Sculpture", "Textiles", etc.), with multiple values separated by the | operator
-            </Form.Text>
-          </Form.Group>
-        </Col>
-      </Row>
+        router.push("/artwork?" + queryString);
+        const updatedHistory = await addToHistory(queryString);
+        setSearchHistory(updatedHistory);
 
-      <Form.Group>
-        <Form.Check type="checkbox" label="Highlighted" {...register('isHighlight')} />
-      </Form.Group>
+        console.log(searchHistory);
+    };
 
-      <Form.Group>
-        <Form.Check  type="checkbox" label="Currently on View" {...register('isOnView')} />
-      </Form.Group>
-      <br />
-      <Button type="submit">Submit</Button>
-    </Form>
-  );
-}
+    return (
+        <div className="mt-5">
+            <Form onSubmit={handleSubmit(submitForm)}>
+                <Row>
+                    <Col>
+                        <Form.Group className="mb-3">
+                            <Form.Label className="form-label">Search Query</Form.Label>
+                            <Form.Control
+                                type="text"
+                                placeholder=""
+                                name="q"
+                                {...register("searchQuery", { required: true })}
+                            />
+                            {errors.searchQuery?.type === "required" && (
+                                <span className="is-invalid">This field is required.</span>
+                            )}
+                        </Form.Group>
+                    </Col>
+                </Row>
+                <Row>
+                    <Col md={4}>
+                        <Form.Label className="form-label">Search By</Form.Label>
+                        <Form.Select
+                            name="searchBy"
+                            className="mb-3"
+                            {...register("searchBy")}
+                        >
+                            <option value="title">Title</option>
+                            <option value="tags">Tags</option>
+                            <option value="artistOrCulture">Artist or Culture</option>
+                        </Form.Select>
+                    </Col>
+                    <Col md={4}>
+                        <Form.Group className="mb-3">
+                            <Form.Label className="form-label">Geo Location</Form.Label>
+                            <Form.Control
+                                type="text"
+                                placeholder=""
+                                name="geoLocation"
+                                {...register("geoLocation")}
+                            />
+                            <Form.Text className="form-label-muted">
+                                Case Sensitive String (e.g. &quot;Europe&quot;, &quot;France&quot;, &quot;Paris&quot;, &quot;China&quot;, &quot;New York&quot;, etc.), with multiple values separated by the | operator.
+                            </Form.Text>
+                        </Form.Group>
+                    </Col>
+                    <Col md={4}>
+                        <Form.Group className="mb-3">
+                            <Form.Label className="form-label">Medium</Form.Label>
+                            <Form.Control
+                                type="text"
+                                placeholder=""
+                                name="medium"
+                                {...register("medium")}
+                            />
+                            <Form.Text className="form-label-muted">
+                                Case Sensitive String (e.g. &quot;Ceramics&quot;, &quot;Furniture&quot;, &quot;Paintings&quot;, &quot;Sculpture&quot;, &quot;Textiles&quot;, etc.), with multiple values separated by the | operator.
+                            </Form.Text>
+                        </Form.Group>
+                    </Col>
+                </Row>
+                <Row>
+                    <Col>
+                        <Form.Check
+                            className="form-label"
+                            type="checkbox"
+                            label="Highlighted"
+                            name="isHighlight"
+                            {...register("isHighlight")}
+                        />
+                        <Form.Check
+                            className="form-label"
+                            type="checkbox"
+                            label="Currently on View"
+                            name="isOnView"
+                            {...register("isOnView")}
+                        />
+                    </Col>
+                </Row>
+                <Row>
+                    <Col>
+                        <br />
+                        <Button variant="primary" type="submit">
+                            Submit
+                        </Button>
+                    </Col>
+                </Row>
+            </Form>
+        </div>
+    );
+};
 
 export default AdvancedSearch;
