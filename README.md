@@ -71,8 +71,7 @@ myapp/
 ├── README.md
 ├── store.js
 └── vercel.json
-```
-```markdown
+
 ## Getting Started
 
 ### Prerequisites
