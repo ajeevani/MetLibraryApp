@@ -1,4 +1,4 @@
-```markdown
+```
 # Met Library App
 
 A sophisticated Next.js application leveraging the Met Library API to allow users to search for artwork, manage user profiles, and save favorite pieces and search history. User data is securely stored using MongoDB and managed via a custom API hosted on Cyclic.sh.
@@ -37,7 +37,7 @@ Explore the live application: [Met Library App](https://met-library-app-1.vercel
 
 ## Project Structure
 
-```
+```plaintext
 myapp/
 ├── .next/
 ├── components/
