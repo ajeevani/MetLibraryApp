@@ -71,6 +71,7 @@ myapp/
 ├── README.md
 ├── store.js
 └── vercel.json
+```
 
 ## Getting Started
 
