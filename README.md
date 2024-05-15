@@ -37,7 +37,7 @@ Explore the live application: [Met Library App](https://met-library-app-1.vercel
 
 ## Project Structure
 
-```plaintext
+```
 myapp/
 ├── .next/
 ├── components/
