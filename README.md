@@ -1,5 +1,3 @@
-Sure, here's a more polished and professional version of the README for your project:
-
 ```markdown
 # Met Library App
 
