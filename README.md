@@ -72,8 +72,7 @@ myapp/
 ├── store.js
 └── vercel.json
 ```
-
-```
+```markdown
 ## Getting Started
 
 ### Prerequisites
